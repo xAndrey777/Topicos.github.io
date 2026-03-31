@@ -509,7 +509,7 @@ const TOPICOS = [
   },
   {
     title: "Locus Horribilis",
-    latin: "Locus Horribilis / Locus Terribilis",
+    latin: "Locus Horribilis",
     meaning: "Antítesis del locus amoenus: paraje <strong>oscuro, inhóspito y amenazante</strong>. Bosque tenebroso, páramo, tormenta, precipicio. Proyecta en el paisaje el caos interior o el peligro que acecha al personaje.",
     origin: "También sistematizado por Curtius como contrafigura del locus amoenus. Sus raíces están en la épica homérica y la tragedia griega. Se desarrolla especialmente en la literatura medieval, el Romanticismo y la narrativa gótica.",
     era: "Antigüedad · Romanticismo · Literatura gótica",
@@ -576,6 +576,104 @@ const TOPICOS = [
     genre: "Auto sacramental · Tragedia · Ensayo",
     theme: "Vida · Muerte · Papel social",
     examples: ["Calderón, El gran teatro del mundo", "Shakespeare, «All the world's a stage»", "Erasmo"]
-  },
-  {
-    t
+  }
+];
+
+let current = 0;
+
+function init() {
+  const deck = document.getElementById('deck');
+  const grid = document.getElementById('index-grid');
+
+  // Slide 0: Cover
+  const cover = document.createElement('div');
+  cover.className = 'slide cover active';
+  cover.innerHTML = `
+    <div class="ornament">🙶 ☙ 🙴</div>
+    <h1>Tópicos <em>Literarios</em></h1>
+    <div class="line"></div>
+    <p>Breviario de Tradición Clásica</p>
+  `;
+  deck.appendChild(cover);
+
+  // Generate Topics
+  TOPICOS.forEach((t, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide topic';
+    slide.innerHTML = `
+      <div class="topic-header">
+        <span class="topic-number">${(i + 1).toString().padStart(2, '0')}</span>
+        <h2>${t.title} <span class="latin">${t.latin}</span></h2>
+      </div>
+      <div class="divider"></div>
+      <div class="badges">
+        <span class="badge era">${t.era}</span>
+        <span class="badge theme">${t.theme}</span>
+      </div>
+      <p class="meaning">${t.meaning}</p>
+      <div class="origin-box">
+        <div class="label">Origen y Contexto</div>
+        <p>${t.origin}</p>
+      </div>
+      <div class="examples">
+        ${t.examples.map(ex => `<span class="ex-tag">${ex}</span>`).join('')}
+      </div>
+    `;
+    deck.appendChild(slide);
+
+    // Index grid
+    const idxItem = document.createElement('div');
+    idxItem.className = 'index-item';
+    idxItem.innerHTML = `<span class="idx-num">${i + 1}</span> ${t.title}`;
+    idxItem.onclick = () => { goTo(i + 1); closeIndex(); };
+    grid.appendChild(idxItem);
+  });
+
+  updateNav();
+}
+
+function move(dir) {
+  const slides = document.querySelectorAll('.slide');
+  if (current + dir < 0 || current + dir >= slides.length) return;
+
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit');
+
+  current += dir;
+
+  setTimeout(() => {
+    slides.forEach(s => s.classList.remove('exit'));
+    slides[current].classList.add('active');
+    updateNav();
+  }, 50);
+}
+
+function goTo(index) {
+  const slides = document.querySelectorAll('.slide');
+  slides.forEach(s => s.classList.remove('active', 'exit'));
+  current = index;
+  slides[current].classList.add('active');
+  updateNav();
+}
+
+function updateNav() {
+  const slides = document.querySelectorAll('.slide');
+  document.getElementById('prev').disabled = current === 0;
+  document.getElementById('next').disabled = current === slides.length - 1;
+  document.getElementById('counter').innerText = `${current} / ${slides.length - 1}`;
+  document.getElementById('progress-bar').style.width = `${(current / (slides.length - 1)) * 100}%`;
+}
+
+document.getElementById('index-btn').onclick = () => document.getElementById('index-modal').classList.add('open');
+window.closeIndex = () => document.getElementById('index-modal').classList.remove('open');
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') move(1);
+  if (e.key === 'ArrowLeft') move(-1);
+  if (e.key === 'Escape') closeIndex();
+});
+
+init();
+</script>
+</body>
+</html>
