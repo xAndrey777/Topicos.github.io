@@ -1,1 +1,581 @@
-a
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tópicos Literarios</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --parch: #f5efe0;
+    --gold: #c9a84c;
+    --rust: #8b3a2a;
+    --sage: #4a6741;
+    --slate: #2d3b4e;
+    --cream: #faf7f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Crimson Pro', serif;
+    color: var(--parch);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── Background texture ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 120% 80% at 20% 50%, #2a1f0e44, transparent),
+      radial-gradient(ellipse 80% 120% at 80% 30%, #1a2a1a33, transparent),
+      url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Deck ── */
+  #deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 6vw;
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+    transition: opacity .7s cubic-bezier(.4,0,.2,1), transform .7s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
+
+  .slide.exit {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.97);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  /* ── Cover slide ── */
+  .cover {
+    background: linear-gradient(160deg, #0e0b06 0%, #1c1409 60%, #0e1510 100%);
+  }
+
+  .cover .ornament {
+    font-size: 2rem;
+    color: var(--gold);
+    letter-spacing: .4em;
+    margin-bottom: 2rem;
+    opacity: .7;
+  }
+
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.1;
+    color: var(--parch);
+    text-shadow: 0 2px 40px #c9a84c55;
+    margin-bottom: 1.5rem;
+  }
+
+  .cover h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .cover p {
+    font-size: 1.25rem;
+    color: #b8a882;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .cover .line {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 2rem auto;
+  }
+
+  /* ── Topic slides ── */
+  .topic {
+    background: linear-gradient(145deg, #0f0c07 0%, #181208 50%, #0c1009 100%);
+    max-width: 980px;
+    margin: 0 auto;
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .topic-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: .6rem;
+  }
+
+  .topic-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--gold);
+    opacity: .25;
+    line-height: 1;
+    min-width: 3.5rem;
+  }
+
+  .topic h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--parch);
+    line-height: 1.15;
+  }
+
+  .topic h2 .latin {
+    display: block;
+    font-size: .55em;
+    font-style: normal;
+    font-weight: 400;
+    color: var(--gold);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-top: .3rem;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+    margin: 1.2rem 0;
+    opacity: .4;
+  }
+
+  .badges {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+  }
+
+  .badge {
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .3rem .9rem;
+    border: 1px solid;
+    border-radius: 2px;
+    font-weight: 400;
+  }
+
+  .badge.era   { border-color: var(--gold);  color: var(--gold);  background: #c9a84c11; }
+  .badge.genre { border-color: #7ea8d0;      color: #7ea8d0;      background: #4a7faa11; }
+  .badge.theme { border-color: #b07ea8;      color: #b07ea8;      background: #8a4a8811; }
+
+  .meaning {
+    font-size: clamp(1rem, 1.8vw, 1.22rem);
+    color: #d9cdb4;
+    line-height: 1.85;
+    margin-bottom: 1.4rem;
+    font-weight: 300;
+  }
+
+  .meaning strong { color: var(--parch); font-weight: 400; }
+
+  .origin-box {
+    border-left: 2px solid var(--gold);
+    padding-left: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .origin-box .label {
+    font-size: .7rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .4rem;
+  }
+
+  .origin-box p {
+    font-size: clamp(.9rem, 1.5vw, 1.05rem);
+    color: #b8a882;
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .examples {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+  }
+
+  .ex-tag {
+    font-size: .8rem;
+    background: #ffffff08;
+    border: 1px solid #ffffff18;
+    padding: .25rem .8rem;
+    border-radius: 2px;
+    color: #c8bfa4;
+  }
+
+  /* ── Progress ── */
+  #progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #ffffff0a;
+    z-index: 100;
+  }
+
+  #progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #e8c97a);
+    transition: width .6s ease;
+    box-shadow: 0 0 10px var(--gold);
+  }
+
+  /* ── Nav ── */
+  #nav {
+    position: fixed;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    z-index: 100;
+    background: #0e0b0680;
+    backdrop-filter: blur(12px);
+    border: 1px solid #ffffff14;
+    border-radius: 50px;
+    padding: .7rem 1.6rem;
+  }
+
+  #nav button {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: .3rem .7rem;
+    border-radius: 50px;
+    transition: background .2s, color .2s;
+    line-height: 1;
+  }
+
+  #nav button:hover { background: #c9a84c22; }
+  #nav button:disabled { opacity: .2; cursor: default; }
+
+  #counter {
+    font-family: 'Playfair Display', serif;
+    font-size: .9rem;
+    color: #8a7d60;
+    min-width: 4rem;
+    text-align: center;
+  }
+
+  /* ── Index ── */
+  #index-btn {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.8rem;
+    z-index: 200;
+    background: #0e0b0680;
+    backdrop-filter: blur(12px);
+    border: 1px solid #ffffff14;
+    color: var(--gold);
+    font-size: .75rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .5rem 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  #index-btn:hover { background: #c9a84c22; }
+
+  #index-modal {
+    position: fixed;
+    inset: 0;
+    background: #000000cc;
+    backdrop-filter: blur(16px);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  #index-modal.open { display: flex; }
+
+  .index-inner {
+    background: #141009;
+    border: 1px solid #c9a84c33;
+    border-radius: 8px;
+    padding: 2.5rem 3rem;
+    max-width: 700px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .index-inner h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .index-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .6rem;
+  }
+
+  .index-item {
+    padding: .6rem 1rem;
+    border: 1px solid #ffffff12;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: .9rem;
+    color: #c8bfa4;
+  }
+
+  .index-item:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: #c9a84c11;
+  }
+
+  .index-item .idx-num {
+    color: var(--gold);
+    opacity: .5;
+    font-size: .75rem;
+    margin-right: .4rem;
+  }
+
+  .close-modal {
+    display: block;
+    margin: 1.5rem auto 0;
+    background: none;
+    border: 1px solid #ffffff22;
+    color: #8a7d60;
+    padding: .5rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: .85rem;
+  }
+  .close-modal:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── Title slide label ── */
+  .slide-label {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.8rem;
+    font-size: .72rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #5a5040;
+    z-index: 100;
+  }
+
+  /* ── Keyboard hint ── */
+  .hint {
+    position: fixed;
+    bottom: 6.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: .7rem;
+    color: #3a3226;
+    letter-spacing: .1em;
+    z-index: 100;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: #c9a84c44 transparent;
+</style>
+</head>
+<body>
+
+<div class="slide-label">Tópicos Literarios</div>
+
+<button id="index-btn">Índice ▾</button>
+
+<div id="index-modal">
+  <div class="index-inner">
+    <h3>Índice de Tópicos</h3>
+    <div class="index-grid" id="index-grid"></div>
+    <button class="close-modal" onclick="closeIndex()">Cerrar</button>
+  </div>
+</div>
+
+<div id="deck"></div>
+
+<div id="progress"><div id="progress-bar"></div></div>
+
+<div id="nav">
+  <button id="prev" onclick="move(-1)">←</button>
+  <span id="counter">0 / 0</span>
+  <button id="next" onclick="move(1)">→</button>
+</div>
+
+<p class="hint">← → teclas o botones para navegar</p>
+
+<script>
+const TOPICOS = [
+  {
+    title: "Carpe Diem",
+    latin: "Carpe Diem",
+    meaning: "Literalmente <strong>«aprovecha el día»</strong>. Invita a disfrutar el presente y los placeres de la vida antes de que la muerte lo arrebate todo. El tiempo pasa inexorable y la juventud es efímera, por lo que no hay que desperdiciar el momento.",
+    origin: "Expresión acuñada por el poeta romano <strong>Horacio</strong> en sus <em>Odas</em> (23 a.C.), concretamente: <em>«Carpe diem, quam minimum credula postero»</em> («Aprovecha el día, confiando lo menos posible en el mañana»). Entronca con la filosofía epicúrea y estoica.",
+    era: "Antigüedad clásica · Renacimiento",
+    genre: "Lírica amorosa · Oda",
+    theme: "Tiempo · Muerte · Placer",
+    examples: ["Horacio, Odas I, 11", "Garcilaso de la Vega", "Quevedo", "Dead Poets Society"]
+  },
+  {
+    title: "Ubi Sunt",
+    latin: "Ubi Sunt",
+    meaning: "«<strong>¿Dónde están…?</strong>» Es una lamentación por los que ya no existen: los héroes, los reyes, las bellezas del pasado. Subraya la vanidad y la fugacidad de todo lo humano frente al paso del tiempo.",
+    origin: "Fórmula medieval de origen latino, popularizada en la Europa cristiana entre los siglos X–XV. Aparece en textos religiosos y elegías. En castellano su uso más célebre es de <strong>Jorge Manrique</strong> en sus <em>Coplas por la muerte de su padre</em> (1476).",
+    era: "Edad Media",
+    genre: "Elegía · Poesía moral",
+    theme: "Muerte · Tiempo · Vanidad",
+    examples: ["Jorge Manrique, Coplas", "Villon, Ballade des dames du temps jadis", "Homero (ecos)"]
+  },
+  {
+    title: "Collige, Virgo, Rosas",
+    latin: "Collige, virgo, rosas",
+    meaning: "«<strong>Recoge, virgen, las rosas</strong>». Variante del Carpe Diem dirigida explícitamente a la joven: aprovecha tu belleza y tu juventud ahora, pues como la rosa se marchitará muy pronto.",
+    origin: "Procede de un poema atribuido a <strong>Ausonio</strong> (siglo IV d.C.), conocido como <em>De rosis nascentibus</em>. Fue amplísimamente retomado en el Renacimiento y el Barroco hispano.",
+    era: "Antigüedad tardía · Renacimiento · Barroco",
+    genre: "Lírica amorosa",
+    theme: "Tiempo · Belleza · Juventud",
+    examples: ["Ausonio", "Lope de Vega", "Góngora, Soneto «Mientras por competir»"]
+  },
+  {
+    title: "Tempus Fugit",
+    latin: "Tempus Fugit",
+    meaning: "«<strong>El tiempo huye</strong>». Expresa la velocidad con que transcurre la vida humana. Muy relacionado con el Carpe Diem, acentúa la angustia ante la irreversibilidad del tiempo.",
+    origin: "Proviene de las <em>Geórgicas</em> de <strong>Virgilio</strong> (29 a.C.): <em>«fugit irreparabile tempus»</em> (el tiempo huye irrecuperable). La frase se convirtió en divisa filosófica y apareció en relojes de sol medievales y renacentistas.",
+    era: "Antigüedad clásica · Barroco",
+    genre: "Lírica · Filosofía moral",
+    theme: "Tiempo · Muerte · Angustia existencial",
+    examples: ["Virgilio, Geórgicas III", "Quevedo, sonetos morales", "Séneca"]
+  },
+  {
+    title: "Beatus Ille",
+    latin: "Beatus Ille",
+    meaning: "«<strong>Feliz aquel</strong>» (que vive alejado de la ciudad y sus ambiciones). Exalta la vida sencilla del campo, la paz interior, el retiro de la codicia y los afanes mundanos. El campo se idealiza frente a la corrupción urbana.",
+    origin: "Oda de <strong>Horacio</strong> (<em>Epodo II</em>, 30 a.C.) que comienza con esa fórmula. Tomada por los humanistas renacentistas y asociada también a la tradición del <em>menosprecio de corte y alabanza de aldea</em>.",
+    era: "Antigüedad clásica · Renacimiento",
+    genre: "Oda · Poesía bucólica",
+    theme: "Naturaleza · Retiro · Felicidad",
+    examples: ["Horacio, Epodo II", "Fray Luis de León, «Qué descansada vida»", "Antonio de Guevara"]
+  },
+  {
+    title: "Locus Amoenus",
+    latin: "Locus Amoenus",
+    meaning: "«<strong>Lugar ameno</strong>». Descripción de un paraje natural idealizado: pradera verde, arroyo que murmura, árboles que dan sombra, flores y cantos de pájaros. Es el escenario perfecto del amor o la meditación.",
+    origin: "Canonizado por <strong>Ernst Robert Curtius</strong> en su ensayo <em>Literatura europea y Edad Media latina</em> (1948), aunque la práctica literaria del locus amoenus se rastrea en <strong>Teócrito</strong>, <strong>Virgilio</strong> y los poetas latinos. Omnipresente en el Renacimiento pastoril.",
+    era: "Antigüedad · Edad Media · Renacimiento",
+    genre: "Poesía bucólica · Novela pastoril · Épica",
+    theme: "Naturaleza idealizada · Amor · Paz",
+    examples: ["Virgilio, Églogas", "Garcilaso de la Vega", "San Juan de la Cruz", "La Diana de Montemayor"]
+  },
+  {
+    title: "Locus Horribilis",
+    latin: "Locus Horribilis / Locus Terribilis",
+    meaning: "Antítesis del locus amoenus: paraje <strong>oscuro, inhóspito y amenazante</strong>. Bosque tenebroso, páramo, tormenta, precipicio. Proyecta en el paisaje el caos interior o el peligro que acecha al personaje.",
+    origin: "También sistematizado por Curtius como contrafigura del locus amoenus. Sus raíces están en la épica homérica y la tragedia griega. Se desarrolla especialmente en la literatura medieval, el Romanticismo y la narrativa gótica.",
+    era: "Antigüedad · Romanticismo · Literatura gótica",
+    genre: "Épica · Novela gótica · Tragedia",
+    theme: "Terror · Mal · Caos",
+    examples: ["Dante, Infierno", "Macbeth de Shakespeare", "Frankenstein de Shelley"]
+  },
+  {
+    title: "Descriptio Puellae",
+    latin: "Descriptio Puellae",
+    meaning: "«<strong>Descripción de la muchacha</strong>». Canon de belleza femenina idealizada: cabello rubio (o dorado), piel blanca, mejillas rojas como rosas, labios de coral, ojos de estrellas... La mujer se convierte en un ideal casi divino.",
+    origin: "Herencia de la poesía greco-latina (Ovidio, Propercio) pasada al petrarquismo a través del <em>Cancionero</em> de <strong>Petrarca</strong> (siglo XIV). Dominó la lírica renacentista europea durante dos siglos. Shakespeare la parodió en su Soneto 130.",
+    era: "Antigüedad · Renacimiento",
+    genre: "Soneto · Lírica amorosa",
+    theme: "Belleza femenina · Amor cortés · Idealización",
+    examples: ["Petrarca, Canzoniere", "Garcilaso", "Herrera", "Shakespeare, Soneto 130 (parodia)"]
+  },
+  {
+    title: "Militia Amoris",
+    latin: "Militia Amoris",
+    meaning: "«<strong>La milicia del amor</strong>». El amor se concibe como una guerra o campaña militar: el amante es soldado, la amada es fortaleza a conquistar, Eros lanza sus flechas. El sufrimiento amoroso equivale a heridas de batalla.",
+    origin: "<strong>Ovidio</strong> desarrolló sistemáticamente esta metáfora en <em>Amores</em> y <em>Ars Amatoria</em> (siglo I a.C.). Recorre la poesía trovadoresca y llega al Siglo de Oro hispano.",
+    era: "Antigüedad · Trovadores · Renacimiento",
+    genre: "Elegía amorosa · Lírica trovadoresca",
+    theme: "Amor · Sufrimiento · Conquista",
+    examples: ["Ovidio, Amores I.9", "Quevedo", "Lope de Vega"]
+  },
+  {
+    title: "Amor Post Mortem",
+    latin: "Amor Post Mortem",
+    meaning: "El amor <strong>trasciende la muerte</strong>. El amante jura que su pasión continuará más allá del fin de la vida, o que la muerte misma no puede separar a los amantes. Consuelo y desafío ante la mortalidad.",
+    origin: "Presente en elegías latinas (Propercio, <em>Elegías IV</em>) y muy desarrollado en el Barroco hispano por <strong>Quevedo</strong>, cuyo soneto «Amor constante más allá de la muerte» es el ejemplo paradigmático.",
+    era: "Antigüedad · Barroco",
+    genre: "Soneto · Elegía",
+    theme: "Amor eterno · Muerte · Inmortalidad",
+    examples: ["Quevedo, «Cerrar podrá mis ojos…»", "Propercio, Elegías IV.7", "Romeo y Julieta"]
+  },
+  {
+    title: "Vanitas Vanitatum",
+    latin: "Vanitas Vanitatum",
+    meaning: "«<strong>Vanidad de vanidades</strong>». Todo es vano y pasajero: la riqueza, la gloria, la belleza, el poder. Nada permanece bajo el sol. Invita a la reflexión sobre la inutilidad de las ambiciones mundanas.",
+    origin: "Libro del <strong>Eclesiastés</strong> (Biblia hebrea, siglos IV–III a.C.): <em>«Vanitas vanitatum, et omnia vanitas»</em>. Fue el lema de la pintura barroca del <em>memento mori</em> (calaveras, velas apagadas, relojes). Dominó la moral cristiana medieval y barroca.",
+    era: "Antigüedad bíblica · Edad Media · Barroco",
+    genre: "Poesía moral · Pintura · Sermón",
+    theme: "Muerte · Vanidad · Nihilismo moral",
+    examples: ["Eclesiastés", "Calderón, La vida es sueño", "Quevedo, sonetos morales"]
+  },
+  {
+    title: "Fortuna Mutabile",
+    latin: "Fortuna Mutabile",
+    meaning: "«<strong>La fortuna es mudable</strong>». La diosa Fortuna gira su rueda: quien hoy está en la cima mañana cae al abismo. Nadie está seguro de su posición. Resignación estoica ante los caprichos del destino.",
+    origin: "Concepto central en <strong>Boecio</strong> (<em>Consolación de la Filosofía</em>, 524 d.C.) y antes en <strong>Virgilio</strong> y <strong>Séneca</strong>. La imagen de la Rueda de la Fortuna fue omnipresente en la iconografía y literatura medieval.",
+    era: "Antigüedad · Edad Media · Renacimiento",
+    genre: "Tragedia · Poesía moral · Filosofía",
+    theme: "Destino · Poder · Inestabilidad",
+    examples: ["Boecio, Consolación", "Boccaccio, De casibus", "Shakespeare, tragedias"]
+  },
+  {
+    title: "Theatrum Mundi",
+    latin: "Theatrum Mundi",
+    meaning: "«<strong>El teatro del mundo</strong>». La vida humana es una representación teatral; Dios es el director, los hombres son actores con papeles asignados y el mundo es el escenario. Cuando muere el actor, el papel termina.",
+    origin: "Metáfora de origen estoico (<strong>Epicteto</strong>, <strong>Marco Aurelio</strong>) retomada por San <strong>Juan Crisóstomo</strong> y plenamente desarrollada en el Barroco. <strong>Calderón de la Barca</strong> lo convirtió en auto sacramental (<em>El gran teatro del mundo</em>, 1655).",
+    era: "Antigüedad · Barroco",
+    genre: "Auto sacramental · Tragedia · Ensayo",
+    theme: "Vida · Muerte · Papel social",
+    examples: ["Calderón, El gran teatro del mundo", "Shakespeare, «All the world's a stage»", "Erasmo"]
+  },
+  {
+    t
